@@ -31,6 +31,15 @@
           <div class="player">
             <video id="video" controls playsinline></video>
             <div id="player-msg" class="player-msg">เลือกช่องจากรายการเพื่อเริ่มดู</div>
+            <div id="app-only" class="app-only" hidden>
+              <div id="app-only-text"></div>
+              <div class="app-only-actions">
+                <a id="btn-vlc" class="btn primary" href="#">เปิดด้วยแอป VLC</a>
+                <button id="btn-m3u-one" class="btn">ดาวน์โหลดไฟล์ .m3u</button>
+                <button id="btn-copy" class="btn">คัดลอกลิงก์</button>
+              </div>
+              <div class="muted small">บนคอมพิวเตอร์ใช้แอป Paweewat หรือเปิดไฟล์ .m3u ด้วย VLC ได้ทุกช่อง</div>
+            </div>
           </div>
           <div class="now">
             <div>
@@ -51,11 +60,17 @@
               <select id="country" aria-label="ประเทศ"></select>
               <select id="genre" aria-label="หมวดหมู่"></select>
             </div>
-            <label class="check"><input id="fav-only" type="checkbox"> เฉพาะช่องโปรด</label>
+            <div class="filter-row">
+              <label class="check"><input id="fav-only" type="checkbox"> เฉพาะช่องโปรด</label>
+              <label class="check"><input id="web-only" type="checkbox"> เฉพาะที่ดูบนเว็บได้</label>
+            </div>
           </div>
           <div id="count" class="muted small"></div>
           <ul id="channels" class="channel-list"></ul>
           <button id="more" class="btn wide" hidden>แสดงเพิ่ม</button>
+          <button id="btn-m3u-list" class="btn wide">ดาวน์โหลดรายการนี้เป็นเพลย์ลิสต์ (.m3u)</button>
+          <p class="muted small">ป้าย <span class="tag">ในแอป</span> = ช่องที่เบราว์เซอร์เล่นไม่ได้ (เช่น ลิงก์ http หรือเซิร์ฟเวอร์ไม่อนุญาต)
+            เปิดด้วยแอป VLC / แอปดูทีวีที่รองรับ .m3u หรือแอป Paweewat บนคอมพิวเตอร์</p>
         </aside>
       </div>
     </section>

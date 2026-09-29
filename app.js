@@ -22,6 +22,13 @@ const chKey = (c) => c.id || c.u;
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 const countryName = (code) => state.countries[code] || code || "-";
 const genreName = (g) => state.genres[g] || g || "ทั่วไป";
+const genresOf = (c) => (c.gs && c.gs.length ? c.gs : (c.g ? [c.g] : []));
+const onWeb = (c) => !c.x;                       // เล่นในเบราว์เซอร์ได้
+const REASON = {
+  http: "ลิงก์ของช่องนี้เป็น http เบราว์เซอร์จึงไม่ยอมเล่นบนเว็บที่เป็น https",
+  cors: "เซิร์ฟเวอร์ของช่องนี้ไม่อนุญาตให้เว็บอื่นเล่น",
+  ua: "ช่องนี้ต้องส่งข้อมูลพิเศษที่เบราว์เซอร์ส่งเองไม่ได้",
+};
 
 async function loadJSON(name) {
   const res = await fetch(`data/${name}?v=${Date.now() / 3.6e6 | 0}`);   // แคชไม่เกิน 1 ชม.
@@ -35,7 +42,8 @@ async function init() {
     ["channels.json", "sports.json", "events.json", "official.json"].map(loadJSON));
   if (ch.status === "fulfilled") {
     Object.assign(state, { channels: ch.value.channels, countries: ch.value.countries, genres: ch.value.genres });
-    $("updated").textContent = `อัปเดตรายชื่อช่องล่าสุด: ${ch.value.generated} น. · ${ch.value.channels.length} ช่องที่เล่นบนเว็บได้`;
+    const web = ch.value.channels.filter(onWeb).length;
+    $("updated").textContent = `อัปเดตรายชื่อช่องล่าสุด: ${ch.value.generated} น. · ${ch.value.channels.length} ช่องที่ใช้ได้ (ดูบนเว็บได้ ${web} ช่อง)`;
   } else {
     $("player-msg").textContent = "โหลดรายชื่อช่องไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ";
   }
@@ -77,6 +85,10 @@ function setupFilters() {
   $("country").addEventListener("change", () => { remember("pw-country", $("country").value); reset(); });
   $("genre").addEventListener("change", reset);
   $("fav-only").addEventListener("change", reset);
+  $("web-only").addEventListener("change", reset);
+  $("btn-m3u-list").addEventListener("click", () => downloadM3U(filtered(), "paweewat-tv.m3u"));
+  $("btn-m3u-one").addEventListener("click", () => state.current && downloadM3U([state.current], "channel.m3u"));
+  $("btn-copy").addEventListener("click", copyLink);
   $("more").addEventListener("click", () => { state.shown += PAGE; renderChannels(); });
   $("btn-random").addEventListener("click", playRandom);
   $("btn-fav").addEventListener("click", toggleFav);
@@ -84,26 +96,29 @@ function setupFilters() {
 
 function filtered() {
   const q = $("q").value.trim().toLowerCase();
-  const country = $("country").value, genre = $("genre").value, favOnly = $("fav-only").checked;
+  const country = $("country").value, genre = $("genre").value;
+  const favOnly = $("fav-only").checked, webOnly = $("web-only").checked;
   return state.channels.filter((c) =>
-    (!country || c.c === country) && (!genre || c.g === genre) &&
-    (!favOnly || state.favs.has(chKey(c))) &&
-    (!q || c.n.toLowerCase().includes(q) || genreName(c.g).toLowerCase().includes(q)));
+    (!country || c.c === country) && (!genre || genresOf(c).includes(genre)) &&
+    (!favOnly || state.favs.has(chKey(c))) && (!webOnly || onWeb(c)) &&
+    (!q || c.n.toLowerCase().includes(q) || genresOf(c).some((g) => genreName(g).toLowerCase().includes(q))));
 }
 
 function renderChannels() {
   const list = filtered();
-  list.sort((a, b) => state.favs.has(chKey(b)) - state.favs.has(chKey(a)));
-  $("count").textContent = `แสดง ${Math.min(list.length, state.shown)} จาก ${list.length} ช่อง`;
+  list.sort((a, b) => state.favs.has(chKey(b)) - state.favs.has(chKey(a)) || onWeb(b) - onWeb(a));
+  $("count").textContent = `แสดง ${Math.min(list.length, state.shown)} จาก ${list.length} ช่อง` +
+    ` (ดูบนเว็บได้ ${list.filter(onWeb).length})`;
   const ul = $("channels");
   ul.innerHTML = list.slice(0, state.shown).map((c, i) => {
     const initials = esc(c.n.replace(/\(.*?\)|\[.*?\]/g, "").trim().slice(0, 3));
     const logo = c.l ? `<img src="${esc(c.l)}" alt="" loading="lazy" onerror="this.replaceWith('${initials}')">` : initials;
     const fav = state.favs.has(chKey(c)) ? `<span class="star">★</span> ` : "";
     const playing = state.current && chKey(state.current) === chKey(c) ? " playing" : "";
-    return `<li class="${playing}" data-i="${i}"><span class="logo">${logo}</span>
-      <span class="ch-text"><div class="ch-name">${fav}${esc(c.n)}</div>
-      <div class="ch-meta">${esc(countryName(c.c))} · ${esc(genreName(c.g))}</div></span></li>`;
+    const tag = onWeb(c) ? "" : `<span class="tag">ในแอป</span>`;
+    return `<li class="${playing}${onWeb(c) ? "" : " app"}" data-i="${i}"><span class="logo">${logo}</span>
+      <span class="ch-text"><div class="ch-name">${fav}${esc(c.n)}${tag}</div>
+      <div class="ch-meta">${esc(countryName(c.c))} · ${esc(genresOf(c).map(genreName).join(", ") || "ทั่วไป")}</div></span></li>`;
   }).join("") || `<li class="muted">ไม่พบช่องที่ตรงกับตัวกรอง</li>`;
   const shown = list.slice(0, state.shown);
   ul.querySelectorAll("li[data-i]").forEach((li) => li.addEventListener("click", () => play(shown[+li.dataset.i])));
@@ -118,11 +133,20 @@ function play(c) {
   msg.hidden = false;
   msg.textContent = "กำลังเปิดช่อง...";
   $("now-name").textContent = c.n;
-  $("now-meta").textContent = `${countryName(c.c)} · ${genreName(c.g)}`;
+  $("now-meta").textContent = `${countryName(c.c)} · ${genresOf(c).map(genreName).join(", ") || "ทั่วไป"}`;
   $("btn-fav").hidden = false;
   updateFavButton();
   history.replaceState(null, "", `#tv?ch=${encodeURIComponent(chKey(c))}`);
   document.title = `${c.n} — Paweewat TV`;
+  $("app-only").hidden = onWeb(c);
+  if (!onWeb(c)) {                        // เล่นบนเว็บไม่ได้: บอกเหตุผลและทางเลือก
+    video.pause(); video.removeAttribute("src"); video.load();
+    msg.hidden = true;
+    $("app-only-text").textContent = `${REASON[c.x] || "ช่องนี้เล่นบนเว็บไม่ได้"} เปิดดูด้วยแอปแทนได้`;
+    $("btn-vlc").href = vlcLink(c.u);
+    renderChannels();
+    return;
+  }
 
   const fail = () => { msg.hidden = false; msg.textContent = "ช่องนี้เปิดไม่ได้ในตอนนี้ (สตรีมอาจปิดหรือย้าย) ลองช่องอื่น หรือกด สุ่มช่อง"; };
   video.onplaying = () => { msg.hidden = true; document.title = `▶ ${c.n} — Paweewat TV`; };
@@ -142,7 +166,7 @@ function play(c) {
 }
 
 function playRandom() {
-  const pool = filtered();
+  const pool = filtered().filter(onWeb);
   if (pool.length) play(pool[Math.floor(Math.random() * pool.length)]);
 }
 
@@ -161,7 +185,40 @@ function updateFavButton() {
 function findChannel(query) {
   if (!query) return null;
   const q = query.toLowerCase();
-  return state.channels.find((c) => c.n.toLowerCase().includes(q)) || null;
+  return state.channels.find((c) => onWeb(c) && c.n.toLowerCase().includes(q)) || null;
+}
+
+/* ---------- เปิดด้วยแอป / ดาวน์โหลดเพลย์ลิสต์ ---------- */
+function vlcLink(url) {
+  const ua = navigator.userAgent;
+  if (/android/i.test(ua)) {             // VLC for Android
+    const [scheme, rest] = url.split("://");
+    return `intent://${rest}#Intent;scheme=${scheme};package=org.videolan.vlc;type=video/*;end`;
+  }
+  if (/iphone|ipad|ipod|macintosh.*mobile/i.test(ua) || (navigator.maxTouchPoints > 1 && /mac/i.test(ua))) {
+    return `vlc-x-callback://x-callback-url/stream?url=${encodeURIComponent(url)}`;   // VLC for iOS/iPadOS
+  }
+  return `vlc://${url}`;                  // คอมพิวเตอร์ (ถ้ายังเปิดไม่ได้ ให้ใช้ไฟล์ .m3u)
+}
+
+function downloadM3U(list, filename) {
+  if (!list.length) return;
+  const lines = ["#EXTM3U"];
+  for (const c of list) {
+    const logo = c.l ? ` tvg-logo="${c.l}"` : "";
+    lines.push(`#EXTINF:-1 tvg-id="${c.id || ""}"${logo} group-title="${genresOf(c).join(";")}",${c.n}`, c.u);
+  }
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "audio/x-mpegurl" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: filename });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+async function copyLink() {
+  if (!state.current) return;
+  try { await navigator.clipboard.writeText(state.current.u); $("btn-copy").textContent = "คัดลอกแล้ว"; }
+  catch { prompt("คัดลอกลิงก์นี้", state.current.u); }
+  setTimeout(() => { $("btn-copy").textContent = "คัดลอกลิงก์"; }, 2000);
 }
 
 /* ---------- กีฬาวันนี้ ---------- */
