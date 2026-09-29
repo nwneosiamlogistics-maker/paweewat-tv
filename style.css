@@ -1,0 +1,154 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1f232c;
+  --line: #2a2f3a;
+  --text: #e8eaef;
+  --muted: #9aa3b2;
+  --accent: #22c55e;
+  --accent-2: #16a34a;
+  --live: #ef4444;
+  --warn-bg: #3a2c10;
+  --warn-text: #fcd34d;
+  --radius: 10px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --panel-2: #f0f2f5;
+    --line: #dde1e7;
+    --text: #151821;
+    --muted: #5d6675;
+    --accent: #16a34a;
+    --accent-2: #15803d;
+    --live: #dc2626;
+    --warn-bg: #fef3c7;
+    --warn-text: #92400e;
+    color-scheme: light;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 "Noto Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+a { color: var(--accent); }
+[hidden] { display: none !important; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+h2 { font-size: 20px; margin: 4px 0 12px; }
+
+/* ---------- แถบบน ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; font-size: 20px; color: var(--text); text-decoration: none; }
+.brand span { color: var(--accent); }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tabs a {
+  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; font-weight: 600;
+}
+.tabs a.active, .tabs a:hover { background: var(--panel-2); color: var(--text); }
+.alert {
+  display: block; overflow-wrap: anywhere; padding: 8px 16px; background: var(--warn-bg); color: var(--warn-text);
+  text-decoration: none; font-weight: 600;
+}
+
+main { padding: 16px; max-width: 1400px; margin: 0 auto; }
+.tv-layout > *, .match > * { min-width: 0; }
+html, body { overflow-x: hidden; }                     /* กันหน้าเว็บเลื่อนซ้ายขวาบนมือถือ */
+
+/* ---------- ทีวี ---------- */
+.tv-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.player { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 9; }
+.player video { width: 100%; height: 100%; display: block; background: #000; }
+.player-msg {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 16px; color: #cbd5e1; pointer-events: none;
+}
+.now { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 2px; flex-wrap: wrap; }
+.now-name { font-size: 18px; font-weight: 700; }
+.now-meta { color: var(--muted); font-size: 13px; }
+.now-actions { display: flex; gap: 8px; }
+
+.list-col { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.filters { display: grid; gap: 8px; margin-bottom: 8px; }
+.filter-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+input[type=search], select {
+  width: 100%; min-width: 0; max-width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); font: inherit;
+}
+.check { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+.channel-list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 70vh; overflow-y: auto; }
+.channel-list li {
+  display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer;
+}
+.channel-list li:hover, .channel-list li.playing { background: var(--panel-2); }
+.channel-list li.playing .ch-name { color: var(--accent); }
+.logo {
+  width: 40px; height: 28px; flex: none; border-radius: 6px; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 12px; color: var(--muted);
+}
+.logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ch-text { min-width: 0; flex: 1; }
+.ch-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-meta { color: var(--muted); font-size: 12px; }
+.star { color: #f59e0b; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: inherit;
+  padding: 7px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-2); }
+.btn.wide { width: 100%; margin-top: 8px; }
+
+/* ---------- กีฬา ---------- */
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.toolbar select { width: auto; min-width: 150px; }
+.league { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; }
+.league h3 { margin: 0; padding: 10px 14px; font-size: 15px; border-bottom: 1px solid var(--line); }
+.match { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; padding: 10px 14px; align-items: center; }
+.match + .match { border-top: 1px solid var(--line); }
+.match .time { font-weight: 700; }
+.match .title { font-weight: 600; }
+.match .status { color: var(--muted); font-size: 13px; }
+.match .status.live { color: var(--live); font-weight: 700; }
+.watch { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.watch .btn { padding: 5px 10px; font-size: 13px; }
+details.intl { grid-column: 2 / -1; font-size: 13px; color: var(--muted); }
+details.intl a { margin-right: 10px; }
+
+/* ---------- มหกรรม / ช่องทางการ ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.card h3 { margin: 0 0 4px; font-size: 17px; }
+.card .badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); }
+.card .badge.live { background: var(--live); color: #fff; }
+.card .links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.grid-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+
+.footer { padding: 20px 16px 32px; max-width: 1400px; margin: 0 auto; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 1024px) and (min-width: 901px) {        /* แท็บเล็ตแนวนอน */
+  .tv-layout { grid-template-columns: minmax(0, 1fr) 320px; }
+}
+@media (max-width: 900px) {                                  /* มือถือ / แท็บเล็ตแนวตั้ง */
+  main { padding: 10px; }
+  .topbar { position: static; padding: 8px 10px; gap: 8px; }
+  .tabs a { padding: 6px 10px; }
+  .tv-layout { grid-template-columns: 1fr; }
+  .player-col { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: 4px; }
+  .toolbar select { min-width: 0; flex: 1 1 140px; }
+  .channel-list { max-height: none; }
+  .match { grid-template-columns: 48px minmax(0, 1fr); }
+  .watch { grid-column: 1 / -1; justify-content: flex-start; }
+}

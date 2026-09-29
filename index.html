@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Paweewat TV — ดูทีวีออนไลน์ฟรี</title>
+  <meta name="description" content="ดูทีวีออนไลน์ฟรี ช่องไทยและทั่วโลก ตารางกีฬาวันนี้ และช่องทางดูถูกลิขสิทธิ์">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#tv">Paweewat <span>TV</span></a>
+    <nav class="tabs" role="tablist">
+      <a href="#tv" data-view="tv">ทีวีออนไลน์</a>
+      <a href="#sports" data-view="sports">กีฬาวันนี้</a>
+      <a href="#events" data-view="events">มหกรรมกีฬา</a>
+      <a href="#official" data-view="official">ช่องทางการ</a>
+    </nav>
+  </header>
+
+  <a id="alert" class="alert" href="#events" hidden></a>
+
+  <main>
+    <!-- ทีวีออนไลน์ -->
+    <section id="view-tv" class="view">
+      <div class="tv-layout">
+        <div class="player-col">
+          <div class="player">
+            <video id="video" controls playsinline></video>
+            <div id="player-msg" class="player-msg">เลือกช่องจากรายการเพื่อเริ่มดู</div>
+          </div>
+          <div class="now">
+            <div>
+              <div id="now-name" class="now-name">ยังไม่ได้เลือกช่อง</div>
+              <div id="now-meta" class="now-meta"></div>
+            </div>
+            <div class="now-actions">
+              <button id="btn-fav" class="btn" hidden>☆ โปรด</button>
+              <button id="btn-random" class="btn">สุ่มช่อง</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="list-col">
+          <div class="filters">
+            <input id="q" type="search" placeholder="ค้นหาช่อง..." autocomplete="off">
+            <div class="filter-row">
+              <select id="country" aria-label="ประเทศ"></select>
+              <select id="genre" aria-label="หมวดหมู่"></select>
+            </div>
+            <label class="check"><input id="fav-only" type="checkbox"> เฉพาะช่องโปรด</label>
+          </div>
+          <div id="count" class="muted small"></div>
+          <ul id="channels" class="channel-list"></ul>
+          <button id="more" class="btn wide" hidden>แสดงเพิ่ม</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- กีฬาวันนี้ -->
+    <section id="view-sports" class="view" hidden>
+      <div class="toolbar">
+        <select id="sport-day" aria-label="วัน"></select>
+        <select id="sport-kind" aria-label="ประเภทกีฬา"></select>
+        <label class="check"><input id="sport-th" type="checkbox"> เฉพาะที่มีช่องถ่ายทอดในไทย</label>
+      </div>
+      <p class="muted small">▶ = ดูฟรีบนเว็บนี้ได้ · ปุ่มอื่นเปิดเว็บ/แอปของผู้ถือสิทธิ์ · <span id="sport-note"></span></p>
+      <div id="sports"></div>
+    </section>
+
+    <!-- มหกรรมกีฬา -->
+    <section id="view-events" class="view" hidden>
+      <h2>มหกรรมกีฬาและทัวร์นาเมนต์สำคัญ</h2>
+      <div id="events" class="cards"></div>
+    </section>
+
+    <!-- ช่องทางการ -->
+    <section id="view-official" class="view" hidden>
+      <h2>ดูทีวีทางการ (ถูกลิขสิทธิ์)</h2>
+      <p class="muted">เปิดหน้าไลฟ์ของสถานีโดยตรง เหมาะกับรายการที่สงวนสิทธิ์ เช่น กีฬาใหญ่</p>
+      <div id="official" class="grid-links"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Paweewat TV ไม่ได้เป็นเจ้าของหรือจัดเก็บสตรีมใด ๆ เบราว์เซอร์ของคุณเชื่อมต่อกับลิงก์สาธารณะโดยตรง
+      รายชื่อช่องจากโครงการ <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener">iptv-org</a>
+      ซึ่งอาจเปลี่ยนหรือปิดได้ตลอด · ตารางแข่งจาก ESPN · หากเป็นเจ้าของช่องและต้องการให้นำลิงก์ออก โปรดติดต่อผู้ดูแลเว็บ</p>
+    <p id="updated" class="muted small"></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.6.15/hls.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
