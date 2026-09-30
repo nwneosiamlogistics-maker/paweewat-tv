@@ -1,7 +1,8 @@
 /* Paweewat TV — เว็บดูทีวีออนไลน์ (ข้อมูลจาก data/*.json ที่สร้างด้วย tools/build_web.py) */
 "use strict";
 
-const PAGE = 300;                       // จำนวนช่องที่แสดงต่อครั้ง
+const PAGE = 300;
+const DEBUG = /[?&]debug=1/.test(location.search);        // ?debug=1 แสดงสาเหตุที่เล่นไม่ได้ในชื่อแท็บ                       // จำนวนช่องที่แสดงต่อครั้ง
 const $ = (id) => document.getElementById(id);
 const state = {
   channels: [], countries: {}, genres: {}, sports: null, events: [], official: [],
@@ -27,6 +28,7 @@ const onWeb = (c) => !c.x;                       // เล่นในเบร�
 const REASON = {
   http: "ลิงก์ของช่องนี้เป็น http เบราว์เซอร์จึงไม่ยอมเล่นบนเว็บที่เป็น https",
   cors: "เซิร์ฟเวอร์ของช่องนี้ไม่อนุญาตให้เว็บอื่นเล่น",
+  cert: "ใบรับรองความปลอดภัยของเซิร์ฟเวอร์ช่องนี้หมดอายุหรือไม่ถูกต้อง เบราว์เซอร์จึงไม่ยอมเล่น",
   ua: "ช่องนี้ต้องส่งข้อมูลพิเศษที่เบราว์เซอร์ส่งเองไม่ได้",
 };
 
@@ -148,13 +150,23 @@ function play(c) {
     return;
   }
 
-  const fail = () => { msg.hidden = false; msg.textContent = "ช่องนี้เปิดไม่ได้ในตอนนี้ (สตรีมอาจปิดหรือย้าย) ลองช่องอื่น หรือกด สุ่มช่อง"; };
+  const fail = () => {                     // เล่นบนเว็บไม่ขึ้น: ให้ทางเลือกเปิดด้วยแอปแทนการจบแค่ข้อความ
+    if (state.current !== c) return;
+    msg.hidden = true;
+    $("app-only-text").textContent = "ช่องนี้เปิดบนเว็บไม่ได้ในตอนนี้ (สตรีมอาจปิดชั่วคราว หรือเบราว์เซอร์ไม่รองรับ) ลองเปิดด้วยแอป หรือเลือกช่องอื่น";
+    $("btn-vlc").href = vlcLink(c.u);
+    $("app-only").hidden = false;
+  };
   video.onplaying = () => { msg.hidden = true; document.title = `▶ ${c.n} — Paweewat TV`; };
   video.onerror = fail;
   if (window.Hls && Hls.isSupported()) {
     const hls = new Hls({ maxBufferLength: 20 });
     state.hls = hls;
-    hls.on(Hls.Events.ERROR, (_e, data) => { if (data.fatal) { hls.destroy(); state.hls = null; fail(); } });
+    hls.on(Hls.Events.ERROR, (_e, data) => {
+      if (!data.fatal) return;
+      if (DEBUG) document.title = `✗ ${c.n} [${data.type}/${data.details}${data.response ? " " + data.response.code : ""}] — Paweewat TV`;
+      hls.destroy(); state.hls = null; fail();
+    });
     hls.loadSource(c.u);
     hls.attachMedia(video);
   } else {
